@@ -49,12 +49,12 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
       return;
     }
     
-    if (isExpanded) {
-      // If card is expanded, open editor
-      onClick();
-    } else {
-      // If card is collapsed, expand it
+    // Always show expanded preview on click
+    if (!isExpanded) {
       setIsExpanded(true);
+    } else {
+      // If already expanded, double-click opens editor
+      onClick();
     }
   };
 
@@ -70,13 +70,13 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100 touch-manipulation ${
-        isExpanded ? 'hover:-translate-y-1' : 'hover:-translate-y-0.5'
+      className={`bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 touch-manipulation h-full flex flex-col ${
+        isExpanded ? 'shadow-md ring-2 ring-blue-100 hover:-translate-y-1' : 'hover:-translate-y-0.5'
       }`}
       onClick={handleCardClick}
       data-testid={`card-${card.id}`}
     >
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 flex-1 flex flex-col">
         {/* Card Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
@@ -111,7 +111,7 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
 
         {/* Expanded Content */}
         {isExpanded && (
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-4 flex-1 flex flex-col">
             {/* Action Buttons */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -153,7 +153,7 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
             </div>
 
             {/* Content Display */}
-            <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-100" data-testid={`preview-${card.id}`}>
+            <div className="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-100 flex-1 overflow-auto" data-testid={`preview-${card.id}`}>
               {isFlipped ? (
                 <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap break-words overflow-x-auto">
                   {rawJson}
