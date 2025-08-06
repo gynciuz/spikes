@@ -2,7 +2,16 @@
 
 ## Overview
 
-This is a full-stack JSON editor application built with React frontend and Express backend. The application allows users to import JSON files, visualize them as organized cards, and edit individual sections through a modal interface. It features a modern UI built with shadcn/ui components and Tailwind CSS, with PostgreSQL database integration using Drizzle ORM for data persistence.
+This is a full-stack JSON editor application built with React frontend and Express backend. The application allows users to import JSON files, visualize them as organized cards in a two-column layout, and edit individual sections through a modal interface. It features a modern UI built with shadcn/ui components and Tailwind CSS, with PostgreSQL database integration using Drizzle ORM for data persistence.
+
+## Recent Changes (January 2025)
+
+- **Two-Column Layout**: Cards are now arranged in two vertical columns with alternating distribution
+- **Always-Expanded Cards**: All cards display complete property listings by default, no expand/collapse needed
+- **Maximum Width Constraint**: Cards have a 400px maximum width for consistent sizing
+- **Enhanced Property Display**: When expanded, shows all object properties and up to 20 array items with full values
+- **Simplified Interaction**: Single click opens editor modal directly, removed expand/collapse buttons
+- **Grandmother-Friendly Previews**: Property names converted to everyday language (e.g., "firstName" becomes "First name")
 
 ## User Preferences
 
