@@ -41,7 +41,15 @@ export function FileDropzone({ onFileSelect, isLoading }: FileDropzoneProps) {
       </div>
       
       <h3 className="text-lg sm:text-xl font-semibold text-black mb-2">No JSON File Loaded</h3>
-      <p className="text-sm sm:text-base text-gray-500 mb-6 max-w-md mx-auto">Import a JSON file to start editing and organizing your data</p>
+      <p className="text-sm sm:text-base text-gray-500 mb-4 max-w-md mx-auto">Import a JSON file to start editing and organizing your data</p>
+      <div className="text-xs sm:text-sm text-gray-400 mb-6 max-w-lg mx-auto">
+        <p>You can also:</p>
+        <ul className="mt-2 space-y-1">
+          <li>• Paste JSON with <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+V</kbd></li>
+          <li>• Drag & drop JSON files anywhere</li>
+          <li>• Drag & drop JSON text content</li>
+        </ul>
+      </div>
       
       <button
         className="inline-flex items-center space-x-2 px-4 sm:px-6 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 touch-manipulation"

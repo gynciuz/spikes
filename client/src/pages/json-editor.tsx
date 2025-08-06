@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Download, Upload, Search, AlertTriangle } from 'lucide-react';
+import { Download, Upload, Search, AlertTriangle, Copy, Clipboard } from 'lucide-react';
 import { JsonCard } from '@/components/json-card';
 import { EditorModal } from '@/components/editor-modal';
 import { FileDropzone } from '@/components/file-dropzone';
@@ -15,6 +15,7 @@ export default function JsonEditor() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -70,17 +71,24 @@ export default function JsonEditor() {
     },
   });
 
-  const handleFileSelect = useCallback(async (file: File) => {
+  // Generic function to handle JSON import from any source
+  const handleJsonImport = useCallback(async (content: any, fileName: string = 'imported.json', fileSize?: number) => {
     setIsImporting(true);
     try {
-      const text = await file.text();
-      const jsonContent = JSON.parse(text);
-      const cards = JsonParser.parseJsonToCards(jsonContent, file.name);
+      let parsedContent;
+      if (typeof content === 'string') {
+        parsedContent = JSON.parse(content);
+      } else {
+        parsedContent = content;
+      }
+      
+      const cards = JsonParser.parseJsonToCards(parsedContent, fileName);
+      const actualSize = fileSize || JSON.stringify(parsedContent).length;
       
       const fileData = {
-        name: file.name,
-        content: jsonContent,
-        size: file.size,
+        name: fileName,
+        content: parsedContent,
+        size: actualSize,
         lastModified: new Date().toISOString(),
         cards,
       };
@@ -89,13 +97,129 @@ export default function JsonEditor() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Invalid JSON file',
+        description: 'Invalid JSON content or parsing error',
         variant: 'destructive',
       });
     } finally {
       setIsImporting(false);
     }
   }, [createFileMutation, toast]);
+
+  const handleFileSelect = useCallback(async (file: File) => {
+    try {
+      const text = await file.text();
+      await handleJsonImport(text, file.name, file.size);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to read file',
+        variant: 'destructive',
+      });
+    }
+  }, [handleJsonImport, toast]);
+
+  // Copy/Paste functionality
+  const handlePasteJson = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text.trim()) {
+        await handleJsonImport(text, `pasted-${Date.now()}.json`);
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Unable to read from clipboard or invalid JSON',
+        variant: 'destructive',
+      });
+    }
+  }, [handleJsonImport, toast]);
+
+  const handleCopyFullJson = useCallback(async () => {
+    if (!currentFile) return;
+    
+    try {
+      const jsonString = JSON.stringify(currentFile.content, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      toast({
+        title: 'Success',
+        description: 'JSON copied to clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      });
+    }
+  }, [currentFile, toast]);
+
+  // Global drag and drop handlers
+  const handleGlobalDragOver = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleGlobalDragLeave = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    if (!e.relatedTarget || !document.body.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
+  }, []);
+
+  const handleGlobalDrop = useCallback(async (e: DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer?.files || []);
+    const jsonFile = files.find(file => 
+      file.type === 'application/json' || 
+      file.name.endsWith('.json')
+    );
+    
+    if (jsonFile) {
+      await handleFileSelect(jsonFile);
+      return;
+    }
+    
+    // Try to get text content from drag
+    const text = e.dataTransfer?.getData('text/plain');
+    if (text && text.trim()) {
+      try {
+        await handleJsonImport(text, `dropped-${Date.now()}.json`);
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Dropped content is not valid JSON',
+          variant: 'destructive',
+        });
+      }
+    }
+  }, [handleFileSelect, handleJsonImport, toast]);
+
+  // Keyboard shortcut for paste
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !e.target || 
+        (e.target as HTMLElement).tagName !== 'INPUT' && 
+        (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      handlePasteJson();
+    }
+  }, [handlePasteJson]);
+
+  // Set up global event listeners
+  useEffect(() => {
+    document.addEventListener('dragover', handleGlobalDragOver);
+    document.addEventListener('dragleave', handleGlobalDragLeave);
+    document.addEventListener('drop', handleGlobalDrop);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('dragover', handleGlobalDragOver);
+      document.removeEventListener('dragleave', handleGlobalDragLeave);
+      document.removeEventListener('drop', handleGlobalDrop);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleGlobalDragOver, handleGlobalDragLeave, handleGlobalDrop, handleKeyDown]);
 
   const handleCardClick = useCallback((card: any) => {
     setSelectedCard(card);
@@ -176,7 +300,20 @@ export default function JsonEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* Drag overlay */}
+      {isDragOver && (
+        <div className="fixed inset-0 z-50 bg-blue-500/20 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-blue-500 border-dashed">
+            <div className="text-center">
+              <Upload className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-black mb-2">Drop JSON Content</h3>
+              <p className="text-gray-500">Drop files or JSON text anywhere to import</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40 backdrop-blur-sm bg-white/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -188,12 +325,33 @@ export default function JsonEditor() {
             
             <div className="flex items-center space-x-2 sm:space-x-3">
               <button
+                onClick={handlePasteJson}
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 border border-gray-200 text-black rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                data-testid="button-paste"
+                title="Paste JSON from clipboard (Ctrl+V)"
+              >
+                <Clipboard className="w-4 h-4" />
+                <span className="hidden sm:inline">Paste</span>
+              </button>
+              
+              <button
                 onClick={() => document.getElementById('file-input')?.click()}
                 className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
                 data-testid="button-import"
               >
                 <Upload className="w-4 h-4" />
                 <span className="hidden sm:inline">Import</span>
+              </button>
+              
+              <button
+                onClick={handleCopyFullJson}
+                disabled={!currentFile}
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 border border-gray-200 text-black rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                data-testid="button-copy"
+                title="Copy full JSON to clipboard"
+              >
+                <Copy className="w-4 h-4" />
+                <span className="hidden sm:inline">Copy</span>
               </button>
               
               <button
