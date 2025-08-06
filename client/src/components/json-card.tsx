@@ -21,7 +21,7 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
   const { toast } = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
-  const preview = JsonParser.formatJsonPreview(card.content, 8);
+  const preview = JsonParser.formatJsonPreview(card.content, isExpanded ? 50 : 8);
   const rawJson = JSON.stringify(card.content, null, 2);
   const hasWarnings = card.warnings && card.warnings.length > 0;
 

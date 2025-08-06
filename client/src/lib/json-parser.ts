@@ -161,14 +161,28 @@ export class JsonParser {
       preview.push(`📦 Contains ${arr.length} items`);
     }
 
+    const showAllItems = maxLines > 10; // When expanded, show all items
+    const maxItemsToShow = showAllItems ? Math.min(arr.length, 20) : 1; // Show up to 20 items when expanded
+
     // Describe what's inside in simple terms
     const firstItem = arr[0];
     if (typeof firstItem === 'string') {
       preview.push(`📝 List of text values`);
-      preview.push(`   First item: "${firstItem.length > 30 ? firstItem.substring(0, 30) + '...' : firstItem}"`);
+      for (let i = 0; i < maxItemsToShow; i++) {
+        const item = arr[i];
+        if (typeof item === 'string') {
+          const displayValue = showAllItems ? item : (item.length > 30 ? item.substring(0, 30) + '...' : item);
+          preview.push(`   Item ${i + 1}: "${displayValue}"`);
+        }
+      }
     } else if (typeof firstItem === 'number') {
       preview.push(`🔢 List of numbers`);
-      preview.push(`   First number: ${firstItem}`);
+      for (let i = 0; i < maxItemsToShow; i++) {
+        const item = arr[i];
+        if (typeof item === 'number') {
+          preview.push(`   Number ${i + 1}: ${item}`);
+        }
+      }
     } else if (typeof firstItem === 'object' && firstItem !== null) {
       const keys = Object.keys(firstItem);
       preview.push(`📋 List of information cards`);
@@ -176,12 +190,33 @@ export class JsonParser {
         const keyNames = keys.slice(0, 3).join(', ');
         preview.push(`   Each card has: ${keyNames}${keys.length > 3 ? '...' : ''}`);
       }
+      
+      if (showAllItems) {
+        for (let i = 0; i < Math.min(maxItemsToShow, 10); i++) {
+          const item = arr[i];
+          if (typeof item === 'object' && item !== null) {
+            const itemKeys = Object.keys(item);
+            if (itemKeys.length > 0) {
+              const mainKey = itemKeys[0];
+              const mainValue = item[mainKey];
+              preview.push(`   Card ${i + 1}: ${this.makeKeyFriendly(mainKey)} = ${this.formatPrimitiveValue(mainValue)}`);
+            }
+          }
+        }
+      }
     } else {
       preview.push(`📊 List of various items`);
+      if (showAllItems) {
+        for (let i = 0; i < maxItemsToShow; i++) {
+          preview.push(`   Item ${i + 1}: ${this.formatPrimitiveValue(arr[i])}`);
+        }
+      }
     }
     
-    if (arr.length > 1) {
+    if (!showAllItems && arr.length > 1) {
       preview.push(`   (and ${arr.length - 1} more similar items)`);
+    } else if (showAllItems && arr.length > maxItemsToShow) {
+      preview.push(`   (and ${arr.length - maxItemsToShow} more items...)`);
     }
   }
 
@@ -199,9 +234,10 @@ export class JsonParser {
       preview.push(`📂 Information card with ${keys.length} pieces of data`);
     }
 
-    // Show what kind of information this contains
+    // Show ALL properties when maxLines is large (expanded view)
     const examples: string[] = [];
-    const maxExamples = Math.min(4, keys.length, maxLines - 2);
+    const showAllProperties = maxLines > 10; // When expanded, show all
+    const maxExamples = showAllProperties ? keys.length : Math.min(4, keys.length, maxLines - 2);
     
     for (let i = 0; i < maxExamples; i++) {
       const key = keys[i];
@@ -209,7 +245,8 @@ export class JsonParser {
       const friendlyName = this.makeKeyFriendly(key);
       
       if (typeof value === 'string') {
-        examples.push(`   ${friendlyName}: "${value.length > 25 ? value.substring(0, 25) + '...' : value}"`);
+        const displayValue = showAllProperties ? value : (value.length > 25 ? value.substring(0, 25) + '...' : value);
+        examples.push(`   ${friendlyName}: "${displayValue}"`);
       } else if (typeof value === 'number') {
         examples.push(`   ${friendlyName}: ${value}`);
       } else if (typeof value === 'boolean') {
@@ -217,9 +254,18 @@ export class JsonParser {
       } else if (Array.isArray(value)) {
         examples.push(`   ${friendlyName}: List with ${value.length} items`);
       } else if (typeof value === 'object' && value !== null) {
-        examples.push(`   ${friendlyName}: More detailed information`);
+        const nestedKeys = Object.keys(value);
+        if (showAllProperties && nestedKeys.length <= 3) {
+          // Show nested object details when expanded
+          const nestedPreview = nestedKeys.map(k => `${this.makeKeyFriendly(k)}: ${this.formatPrimitiveValue(value[k])}`).join(', ');
+          examples.push(`   ${friendlyName}: {${nestedPreview}}`);
+        } else {
+          examples.push(`   ${friendlyName}: More detailed information`);
+        }
+      } else if (value === null) {
+        examples.push(`   ${friendlyName}: (empty)`);
       } else {
-        examples.push(`   ${friendlyName}: Some data`);
+        examples.push(`   ${friendlyName}: ${String(value)}`);
       }
     }
     
