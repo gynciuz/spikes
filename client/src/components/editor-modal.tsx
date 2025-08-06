@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Download, Upload, Save, FileText, Clock } from 'lucide-react';
+import { X, Download, Upload, Save, FileText, Clock, Copy, Clipboard } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface EditorModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export function EditorModal({
   const [hasChanges, setHasChanges] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (card && isOpen) {
@@ -114,6 +116,39 @@ export function EditorModal({
       setEditorContent(minified);
     } catch (error) {
       // Do nothing if JSON is invalid
+    }
+  };
+
+  const handleCopyContent = async () => {
+    try {
+      await navigator.clipboard.writeText(editorContent);
+      toast({
+        title: 'Success',
+        description: 'Content copied to clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handlePasteContent = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text.trim()) {
+        setEditorContent(text);
+        setHasChanges(true);
+        validateJson(text);
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Unable to read from clipboard',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -232,6 +267,24 @@ export function EditorModal({
                 <div>
                   <h4 className="text-sm font-semibold text-black mb-2 lg:mb-3">Quick Actions</h4>
                   <div className="flex lg:flex-col gap-2 lg:space-y-2 lg:gap-0">
+                    <button
+                      onClick={handleCopyContent}
+                      className="flex-1 lg:w-full text-left px-3 py-2 text-sm text-black hover:bg-white rounded-lg transition-colors"
+                      data-testid="button-copy-content"
+                    >
+                      <Copy className="w-4 h-4 inline mr-2" />
+                      <span className="hidden sm:inline">Copy</span>
+                      <span className="sm:hidden">Copy</span>
+                    </button>
+                    <button
+                      onClick={handlePasteContent}
+                      className="flex-1 lg:w-full text-left px-3 py-2 text-sm text-black hover:bg-white rounded-lg transition-colors"
+                      data-testid="button-paste-content"
+                    >
+                      <Clipboard className="w-4 h-4 inline mr-2" />
+                      <span className="hidden sm:inline">Paste</span>
+                      <span className="sm:hidden">Paste</span>
+                    </button>
                     <button
                       onClick={formatJson}
                       className="flex-1 lg:w-full text-left px-3 py-2 text-sm text-black hover:bg-white rounded-lg transition-colors"

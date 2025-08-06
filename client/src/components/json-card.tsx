@@ -1,5 +1,6 @@
-import { Download, MoreHorizontal, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Download, MoreHorizontal, AlertTriangle, CheckCircle, Copy } from 'lucide-react';
 import { JsonParser } from '@/lib/json-parser';
+import { useToast } from '@/hooks/use-toast';
 
 interface JsonCardProps {
   card: {
@@ -16,8 +17,27 @@ interface JsonCardProps {
 }
 
 export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
+  const { toast } = useToast();
   const preview = JsonParser.formatJsonPreview(card.content, 5);
   const hasWarnings = card.warnings && card.warnings.length > 0;
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const jsonString = JSON.stringify(card.content, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      toast({
+        title: 'Success',
+        description: 'Card content copied to clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <div
@@ -41,11 +61,20 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
             )}
             <button
               className="p-1.5 sm:p-1 hover:bg-gray-50 rounded-md transition-colors touch-manipulation"
+              onClick={handleCopy}
+              data-testid={`button-copy-${card.id}`}
+              title="Copy card content to clipboard"
+            >
+              <Copy className="w-4 h-4 text-gray-400" />
+            </button>
+            <button
+              className="p-1.5 sm:p-1 hover:bg-gray-50 rounded-md transition-colors touch-manipulation"
               onClick={(e) => {
                 e.stopPropagation();
                 onExport();
               }}
               data-testid={`button-export-${card.id}`}
+              title="Export card as JSON file"
             >
               <Download className="w-4 h-4 text-gray-400" />
             </button>
