@@ -19,9 +19,8 @@ interface JsonCardProps {
 
 export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
   const { toast } = useToast();
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
-  const preview = JsonParser.formatJsonPreview(card.content, isExpanded ? 50 : 8);
+  const preview = JsonParser.formatJsonPreview(card.content, 50); // Always use expanded view
   const rawJson = JSON.stringify(card.content, null, 2);
   const hasWarnings = card.warnings && card.warnings.length > 0;
 
@@ -44,23 +43,13 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't expand if clicking on buttons
+    // Don't open editor if clicking on buttons
     if ((e.target as Element).closest('button')) {
       return;
     }
     
-    // Always show expanded preview on click
-    if (!isExpanded) {
-      setIsExpanded(true);
-    } else {
-      // If already expanded, double-click opens editor
-      onClick();
-    }
-  };
-
-  const handleToggleExpand = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
+    // Open editor on click
+    onClick();
   };
 
   const handleFlip = (e: React.MouseEvent) => {
@@ -70,9 +59,7 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 touch-manipulation h-full flex flex-col ${
-        isExpanded ? 'shadow-md ring-2 ring-blue-100 hover:-translate-y-1' : 'hover:-translate-y-0.5'
-      }`}
+      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 touch-manipulation h-full flex flex-col hover:-translate-y-0.5 max-w-[400px] w-full"
       onClick={handleCardClick}
       data-testid={`card-${card.id}`}
     >
@@ -93,25 +80,11 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
             {hasWarnings && (
               <div className="w-2 h-2 bg-orange-400 rounded-full" data-testid={`indicator-warning-${card.id}`} />
             )}
-            
-            <button
-              onClick={handleToggleExpand}
-              className="p-1.5 hover:bg-gray-50 rounded-md transition-colors"
-              data-testid={`button-expand-${card.id}`}
-              title={isExpanded ? "Collapse card" : "Expand card"}
-            >
-              {isExpanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-600" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-600" />
-              )}
-            </button>
           </div>
         </div>
 
-        {/* Expanded Content */}
-        {isExpanded && (
-          <div className="mt-4 space-y-4 flex-1 flex flex-col">
+        {/* Content */}
+        <div className="mt-4 space-y-4 flex-1 flex flex-col">
             {/* Action Buttons */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -222,7 +195,6 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
               </div>
             </div>
           </div>
-        )}
       </div>
     </div>
   );
