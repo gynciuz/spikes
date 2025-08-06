@@ -84,15 +84,13 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
           </div>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-2 sm:p-3 overflow-hidden" data-testid={`preview-${card.id}`}>
+        <div className="bg-blue-50 rounded-lg p-3 sm:p-4 overflow-hidden border border-blue-100" data-testid={`preview-${card.id}`}>
           {preview.split('\n').map((line, index) => (
-            <div key={index} className={`font-mono text-xs sm:text-sm leading-relaxed ${
-              line.startsWith('📋') ? 'text-blue-600 font-semibold mb-1' :
-              line.startsWith('📊') || line.startsWith('🗂️') ? 'text-green-600 font-medium' :
-              line.startsWith('🔍') || line.startsWith('🔗') ? 'text-purple-600 text-xs' :
-              line.startsWith('⚪') ? 'text-gray-400 italic' :
-              line.startsWith('  ') ? 'text-gray-600 ml-4 text-xs leading-tight' :
-              'text-gray-600'
+            <div key={index} className={`leading-relaxed ${
+              line.startsWith('📦') || line.startsWith('📂') || line.startsWith('📄') ? 'text-blue-700 font-semibold text-sm mb-2 font-sans' :
+              line.startsWith('📝') || line.startsWith('🔢') || line.startsWith('📋') ? 'text-green-700 font-medium text-sm mb-1 font-sans' :
+              line.startsWith('   ') ? 'text-gray-700 ml-3 text-sm font-sans' :
+              'text-gray-600 text-sm font-sans'
             }`}>
               {line.trim() && (
                 <span className="whitespace-pre-wrap break-words">
