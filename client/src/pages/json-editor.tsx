@@ -437,19 +437,12 @@ export default function JsonEditor() {
         {!currentFile ? (
           <FileDropzone onFileSelect={handleFileSelect} isLoading={isImporting} />
         ) : (
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 auto-rows-max">
-            {filteredCards.map((card, index) => (
-              <div 
-                key={card.id}
-                className={`${
-                  // Bento box style - varying heights and occasional full width
-                  index === 0 ? 'sm:col-span-2 sm:row-span-1' : // First card spans full width
-                  index % 5 === 4 ? 'sm:col-span-2' : // Every 5th card spans full width
-                  index % 3 === 0 ? 'sm:row-span-2' : // Every 3rd card is taller
-                  ''
-                }`}
-              >
+          <div className="flex flex-col sm:flex-row gap-6 items-start">
+            {/* Column 1 */}
+            <div className="flex-1 flex flex-col gap-4 items-center">
+              {filteredCards.filter((_, index) => index % 2 === 0).map((card) => (
                 <JsonCard
+                  key={card.id}
                   card={{
                     ...card,
                     content: card.content || {}
@@ -457,8 +450,23 @@ export default function JsonEditor() {
                   onClick={() => handleCardClick(card)}
                   onExport={() => handleExportCard(card)}
                 />
-              </div>
-            ))}
+              ))}
+            </div>
+            
+            {/* Column 2 */}
+            <div className="flex-1 flex flex-col gap-4 items-center">
+              {filteredCards.filter((_, index) => index % 2 === 1).map((card) => (
+                <JsonCard
+                  key={card.id}
+                  card={{
+                    ...card,
+                    content: card.content || {}
+                  }}
+                  onClick={() => handleCardClick(card)}
+                  onExport={() => handleExportCard(card)}
+                />
+              ))}
+            </div>
           </div>
         )}
       </main>
