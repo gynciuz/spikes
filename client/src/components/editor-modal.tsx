@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Download, Upload, Save, FileText, Clock, Copy, Clipboard } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
 interface EditorModalProps {
@@ -157,6 +157,9 @@ export function EditorModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[95vh] sm:h-[90vh] p-0 bg-white rounded-2xl overflow-hidden m-2 sm:m-4">
+        <DialogTitle className="sr-only">
+          Edit JSON: {card.title}
+        </DialogTitle>
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 border-b border-gray-100 gap-3">

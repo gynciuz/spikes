@@ -84,10 +84,23 @@ export function JsonCard({ card, onClick, onExport }: JsonCardProps) {
           </div>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-2 sm:p-3 font-mono text-xs sm:text-sm overflow-hidden">
-          <pre className="whitespace-pre-wrap text-gray-700 overflow-hidden leading-relaxed" data-testid={`preview-${card.id}`}>
-            {preview}
-          </pre>
+        <div className="bg-gray-50 rounded-lg p-2 sm:p-3 overflow-hidden" data-testid={`preview-${card.id}`}>
+          {preview.split('\n').map((line, index) => (
+            <div key={index} className={`font-mono text-xs sm:text-sm leading-relaxed ${
+              line.startsWith('📋') ? 'text-blue-600 font-semibold mb-1' :
+              line.startsWith('📊') || line.startsWith('🗂️') ? 'text-green-600 font-medium' :
+              line.startsWith('🔍') || line.startsWith('🔗') ? 'text-purple-600 text-xs' :
+              line.startsWith('⚪') ? 'text-gray-400 italic' :
+              line.startsWith('  ') ? 'text-gray-600 ml-4 text-xs leading-tight' :
+              'text-gray-600'
+            }`}>
+              {line.trim() && (
+                <span className="whitespace-pre-wrap break-words">
+                  {line}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 sm:mt-4 gap-2 text-xs">
