@@ -181,72 +181,97 @@ export default function JsonEditor() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40 backdrop-blur-sm bg-white/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-black">JSON Editor</h1>
-              <span className="text-sm text-gray-500">v1.0</span>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <h1 className="text-lg sm:text-xl font-semibold text-black">JSON Editor</h1>
+              <span className="hidden sm:inline text-sm text-gray-500">v1.0</span>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <button
                 onClick={() => document.getElementById('file-input')?.click()}
-                className="flex items-center space-x-2 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
                 data-testid="button-import"
               >
                 <Upload className="w-4 h-4" />
-                <span>Import</span>
+                <span className="hidden sm:inline">Import</span>
               </button>
               
               <button
                 onClick={handleExportFull}
                 disabled={!currentFile}
-                className="flex items-center space-x-2 px-3 py-1.5 border border-gray-200 text-black rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 border border-gray-200 text-black rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
                 data-testid="button-export"
               >
                 <Download className="w-4 h-4" />
-                <span>Export</span>
+                <span className="hidden sm:inline">Export</span>
               </button>
               
-              <div className="relative">
+              <div className="relative hidden sm:block">
                 <input
                   type="text"
                   placeholder="Search JSON..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-32 sm:w-48 lg:w-64 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   data-testid="input-search"
                 />
                 <Search className="absolute right-3 top-1.5 w-4 h-4 text-gray-400" />
               </div>
+              
+              <button
+                onClick={() => setSearchQuery('')}
+                className="sm:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                data-testid="button-search-mobile"
+              >
+                <Search className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Mobile search bar */}
+          <div className="sm:hidden pb-3">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search JSON..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                data-testid="input-search-mobile"
+              />
+              <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Status Bar */}
         {currentFile && (
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
-                <span className="text-sm text-gray-500" data-testid="text-filename">
-                  {currentFile.name}
-                </span>
+          <div className="mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <span className="text-sm text-gray-500 truncate max-w-[200px] sm:max-w-none" data-testid="text-filename">
+                    {currentFile.name}
+                  </span>
+                </div>
+                <div className="text-xs sm:text-sm text-gray-500">
+                  <span data-testid="text-file-size">{(currentFile.size / 1024).toFixed(1)} KB</span> • 
+                  <span data-testid="text-card-count"> {currentFile.cards.length} cards</span>
+                </div>
               </div>
-              <div className="text-sm text-gray-500">
-                <span data-testid="text-file-size">{(currentFile.size / 1024).toFixed(1)} KB</span> • 
-                <span data-testid="text-card-count"> {currentFile.cards.length} cards</span>
-              </div>
+              
+              {totalWarnings > 0 && (
+                <div className="flex items-center space-x-2 px-2 py-1 bg-orange-50 rounded-md">
+                  <AlertTriangle className="w-3 h-3 text-orange-500" />
+                  <span className="text-xs font-medium text-orange-600" data-testid="text-warnings">
+                    {totalWarnings} warning{totalWarnings !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
             </div>
-            
-            {totalWarnings > 0 && (
-              <div className="flex items-center space-x-2 px-2 py-1 bg-orange-50 rounded-md">
-                <AlertTriangle className="w-3 h-3 text-orange-500" />
-                <span className="text-xs font-medium text-orange-600" data-testid="text-warnings">
-                  {totalWarnings} warning{totalWarnings !== 1 ? 's' : ''}
-                </span>
-              </div>
-            )}
           </div>
         )}
 
@@ -254,11 +279,14 @@ export default function JsonEditor() {
         {!currentFile ? (
           <FileDropzone onFileSelect={handleFileSelect} isLoading={isImporting} />
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredCards.map((card) => (
               <JsonCard
                 key={card.id}
-                card={card}
+                card={{
+                  ...card,
+                  content: card.content || {}
+                }}
                 onClick={() => handleCardClick(card)}
                 onExport={() => handleExportCard(card)}
               />
