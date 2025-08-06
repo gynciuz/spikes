@@ -137,81 +137,96 @@ export class JsonParser {
 
   private static createStructuredPreview(content: any, maxLines: number): string {
     const preview: string[] = [];
-    const type = this.getContentType(content);
-    
-    // Add type and structure information
-    preview.push(`📋 ${type.charAt(0).toUpperCase() + type.slice(1)}`);
     
     if (Array.isArray(content)) {
-      this.addArrayPreview(content, preview, maxLines - 2);
+      this.addSimpleArrayPreview(content, preview, maxLines);
     } else if (typeof content === 'object' && content !== null) {
-      this.addObjectPreview(content, preview, maxLines - 2);
+      this.addSimpleObjectPreview(content, preview, maxLines);
     } else {
-      preview.push(`${this.formatPrimitiveValue(content)}`);
+      preview.push(`📄 Simple value: ${this.formatPrimitiveValue(content)}`);
     }
     
     return preview.slice(0, maxLines).join('\n');
   }
 
-  private static addArrayPreview(arr: any[], preview: string[], remainingLines: number): void {
-    preview.push(`📊 ${arr.length} items`);
-    
+  private static addSimpleArrayPreview(arr: any[], preview: string[], maxLines: number): void {
     if (arr.length === 0) {
-      preview.push('⚪ Empty array');
+      preview.push('📦 Empty list');
       return;
     }
 
-    // Show data type distribution
-    const typeStats = this.getTypeDistribution(arr);
-    const typeInfo = Object.entries(typeStats)
-      .map(([type, count]) => `${count} ${type}${count > 1 ? 's' : ''}`)
-      .join(', ');
-    
-    if (typeInfo && remainingLines > 1) {
-      preview.push(`🔍 Contains: ${typeInfo}`);
-      remainingLines--;
+    if (arr.length === 1) {
+      preview.push('📦 Contains 1 item');
+    } else {
+      preview.push(`📦 Contains ${arr.length} items`);
     }
 
-    // Show sample items with structure
-    const sampleCount = Math.min(3, arr.length, remainingLines);
-    for (let i = 0; i < sampleCount; i++) {
-      const item = arr[i];
-      const itemPreview = this.formatItemPreview(item, i);
-      preview.push(`  ${itemPreview}`);
+    // Describe what's inside in simple terms
+    const firstItem = arr[0];
+    if (typeof firstItem === 'string') {
+      preview.push(`📝 List of text values`);
+      preview.push(`   First item: "${firstItem.length > 30 ? firstItem.substring(0, 30) + '...' : firstItem}"`);
+    } else if (typeof firstItem === 'number') {
+      preview.push(`🔢 List of numbers`);
+      preview.push(`   First number: ${firstItem}`);
+    } else if (typeof firstItem === 'object' && firstItem !== null) {
+      const keys = Object.keys(firstItem);
+      preview.push(`📋 List of information cards`);
+      if (keys.length > 0) {
+        const keyNames = keys.slice(0, 3).join(', ');
+        preview.push(`   Each card has: ${keyNames}${keys.length > 3 ? '...' : ''}`);
+      }
+    } else {
+      preview.push(`📊 List of various items`);
     }
     
-    if (arr.length > sampleCount) {
-      preview.push(`  ... and ${arr.length - sampleCount} more`);
+    if (arr.length > 1) {
+      preview.push(`   (and ${arr.length - 1} more similar items)`);
     }
   }
 
-  private static addObjectPreview(obj: Record<string, any>, preview: string[], remainingLines: number): void {
+  private static addSimpleObjectPreview(obj: Record<string, any>, preview: string[], maxLines: number): void {
     const keys = Object.keys(obj);
-    preview.push(`🗂️ ${keys.length} properties`);
     
     if (keys.length === 0) {
-      preview.push('⚪ Empty object');
+      preview.push('📂 Empty information card');
       return;
     }
 
-    // Show key relationships and hierarchy
-    const relationships = this.analyzeRelationships(obj);
-    if (relationships.length > 0 && remainingLines > 1) {
-      preview.push(`🔗 ${relationships.join(', ')}`);
-      remainingLines--;
+    if (keys.length === 1) {
+      preview.push('📂 Information card with 1 piece of data');
+    } else {
+      preview.push(`📂 Information card with ${keys.length} pieces of data`);
     }
 
-    // Show key structure with values
-    const keyPreviewCount = Math.min(4, keys.length, remainingLines);
-    for (let i = 0; i < keyPreviewCount; i++) {
+    // Show what kind of information this contains
+    const examples: string[] = [];
+    const maxExamples = Math.min(4, keys.length, maxLines - 2);
+    
+    for (let i = 0; i < maxExamples; i++) {
       const key = keys[i];
       const value = obj[key];
-      const keyPreview = this.formatKeyPreview(key, value);
-      preview.push(`  ${keyPreview}`);
+      const friendlyName = this.makeKeyFriendly(key);
+      
+      if (typeof value === 'string') {
+        examples.push(`   ${friendlyName}: "${value.length > 25 ? value.substring(0, 25) + '...' : value}"`);
+      } else if (typeof value === 'number') {
+        examples.push(`   ${friendlyName}: ${value}`);
+      } else if (typeof value === 'boolean') {
+        examples.push(`   ${friendlyName}: ${value ? 'Yes' : 'No'}`);
+      } else if (Array.isArray(value)) {
+        examples.push(`   ${friendlyName}: List with ${value.length} items`);
+      } else if (typeof value === 'object' && value !== null) {
+        examples.push(`   ${friendlyName}: More detailed information`);
+      } else {
+        examples.push(`   ${friendlyName}: Some data`);
+      }
     }
     
-    if (keys.length > keyPreviewCount) {
-      preview.push(`  ... and ${keys.length - keyPreviewCount} more`);
+    preview.push(...examples);
+    
+    if (keys.length > maxExamples) {
+      preview.push(`   ... and ${keys.length - maxExamples} more pieces of information`);
     }
   }
 
@@ -305,5 +320,44 @@ export class JsonParser {
     }
     
     return relationships;
+  }
+
+  private static makeKeyFriendly(key: string): string {
+    // Convert technical keys to friendly names
+    const friendlyMappings: Record<string, string> = {
+      'id': 'ID Number',
+      'user_id': 'User ID',
+      'userId': 'User ID', 
+      'name': 'Name',
+      'firstName': 'First Name',
+      'first_name': 'First Name',
+      'lastName': 'Last Name', 
+      'last_name': 'Last Name',
+      'email': 'Email',
+      'phone': 'Phone',
+      'address': 'Address',
+      'created_at': 'Created Date',
+      'createdAt': 'Created Date',
+      'updated_at': 'Updated Date',
+      'updatedAt': 'Updated Date',
+      'price': 'Price',
+      'amount': 'Amount',
+      'quantity': 'Quantity',
+      'status': 'Status',
+      'isActive': 'Is Active',
+      'is_active': 'Is Active'
+    };
+
+    // Return friendly name if available
+    if (friendlyMappings[key]) {
+      return friendlyMappings[key];
+    }
+
+    // Convert camelCase and snake_case to readable format
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
   }
 }
