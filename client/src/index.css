@@ -142,6 +142,25 @@
     font-weight: 500;
   }
   
+  /* Mobile utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
   .syntax-highlight .json-string { 
     color: hsl(142, 76%, 36%);
   }

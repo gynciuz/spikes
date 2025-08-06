@@ -25,26 +25,26 @@ export function FileDropzone({ onFileSelect, isLoading }: FileDropzoneProps) {
   }, [onFileSelect]);
 
   return (
-    <div className="text-center py-16">
+    <div className="text-center py-8 sm:py-16 px-4">
       <div
-        className="w-24 h-24 mx-auto mb-6 bg-gray-50 rounded-full flex items-center justify-center border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors cursor-pointer"
+        className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gray-50 rounded-full flex items-center justify-center border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors cursor-pointer touch-manipulation"
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
         onClick={() => document.getElementById('file-input')?.click()}
         data-testid="file-dropzone"
       >
         {isLoading ? (
-          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
+          <div className="animate-spin w-6 h-6 sm:w-8 sm:h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
         ) : (
-          <Upload className="w-12 h-12 text-gray-400" />
+          <Upload className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400" />
         )}
       </div>
       
-      <h3 className="text-xl font-semibold text-black mb-2">No JSON File Loaded</h3>
-      <p className="text-gray-500 mb-6">Import a JSON file to start editing and organizing your data</p>
+      <h3 className="text-lg sm:text-xl font-semibold text-black mb-2">No JSON File Loaded</h3>
+      <p className="text-sm sm:text-base text-gray-500 mb-6 max-w-md mx-auto">Import a JSON file to start editing and organizing your data</p>
       
       <button
-        className="inline-flex items-center space-x-2 px-6 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+        className="inline-flex items-center space-x-2 px-4 sm:px-6 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 touch-manipulation"
         onClick={() => document.getElementById('file-input')?.click()}
         disabled={isLoading}
         data-testid="button-choose-file"
