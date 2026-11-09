@@ -1,8 +1,8 @@
 # newsletters: mark subscriptions as read
 
-Every morning a scheduled Claude task opens Gmail and marks unread newsletter
-mail as read. It removes the UNREAD label and nothing else: no archive, no
-trash, no other label, no reply, no forward.
+Every morning a Google Apps Script in the owner's Google account marks unread
+newsletter mail as read. It removes the unread flag and nothing else: no
+archive, no trash, no other label, no reply, no forward.
 
 ## What counts as a newsletter
 
@@ -13,8 +13,8 @@ left alone, including mail from the same category tab that is not on the list
 
 ## Controls
 
-Everything the run does is decided by two files on `main`, read fresh each
-morning. Edit, commit, done.
+The run reads `settings.txt` and `senders.txt` from `main` on GitHub at the
+start of every run. Edit, commit, done.
 
 | Want to | Edit |
 |---------|------|
@@ -22,37 +22,43 @@ morning. Edit, commit, done.
 | Pause or resume the run | `settings.txt`, `enabled: yes / no` |
 | Look further back or less far | `settings.txt`, `lookback_days` |
 | Stop or start the candidate list | `settings.txt`, `candidates` |
-| Get a phone push after each run | `settings.txt`, `push: yes` |
-| Change the time or delete the routine | claude.ai, the scheduled task `newsletters mark read (self-bind)`; or tell Claude in any session |
-| Change what the run does | `PROMPT.md`, then update the stored prompt to match |
+| E-mail yourself the run report | `settings.txt`, `report_email: yes` |
+| Change the time or remove the schedule | script.google.com, the project's Triggers page; or run `setupTrigger` / `removeTrigger` |
+| Change what the run does | `apps-script/Code.gs`, then paste it over the script at script.google.com |
 
-## Schedule
+## Setting it up (once)
 
-Daily at 06:40 Europe/Vilnius, as a claude.ai scheduled task named
-`newsletters mark read (self-bind)`. It wakes the Claude Code session that set
-it up (session_014biwXUQ5bZx4rDKcp8oRis), which holds the Gmail connector and a
-clone of this repo. `PROMPT.md` is the copy of the stored prompt, kept here so
-changes are versioned; if it changes here, the stored task is updated to match.
+1. Open script.google.com, New project, name it `newsletters`.
+2. Replace the contents of `Code.gs` with `apps-script/Code.gs` from this repo.
+3. Run `setupTrigger` once from the editor. Approve the permissions it asks for
+   (Gmail, fetching an external URL, sending mail as you). Google shows an
+   "unverified app" warning for personal scripts; Advanced, then continue.
+4. Run `runNow` once and read the log. It says how many were marked and from whom.
 
-Why self-bind: a scheduled task that starts a fresh session cannot carry the
-Gmail connector or this repo when created from inside a session (tested
-2026-11-09: that session had no Gmail tools and no repo). The fresh-session
-task is kept disabled on the account, renamed RETIRED. The alternative is to
-create the task in the claude.ai Routines UI with Gmail and gynciuz/spikes
-selected; the prompt in `PROMPT.md` works for either.
+The daily trigger fires at about 07:00 Europe/Vilnius (Google gives a 15-minute
+window). The script's execution history on script.google.com is the record of
+runs.
 
 ## Each run
 
-1. Fetches origin and reads `settings.txt` and `senders.txt` from main (falls
-   back to defaults and the copy embedded in the prompt). Stops here when
+1. Fetches `settings.txt` and `senders.txt` from GitHub (falls back to the copies
+   embedded in the script if GitHub cannot be reached, and says so). Stops when
    `enabled: no`.
 2. Searches Gmail for unread mail from those senders inside the lookback.
-3. Removes UNREAD from each matching message.
+3. Marks each matching message read. A message that matched the query but not
+   the list is skipped and counted.
 4. Lists unread senders from the Updates and Promotions tabs that carry an
    unsubscribe link but are not on the list, as candidates. It does not touch
    them.
-5. Reports counts in the session. The record of runs is the scheduled task's
-   run history on the account; nothing is committed.
+5. Logs the report; e-mails it to you when `report_email: yes`.
+
+## Why not a Claude routine
+
+Tried first, 2026-11-09. A Claude scheduled task could read the mailbox but not
+change it: the Gmail connector's Google grant does not include modifying mail,
+in this session and in a fresh one. Both Claude tasks are kept disabled on the
+account, renamed RETIRED. The Apps Script runs with the account's own Gmail
+permission and has no such gap.
 
 ## Known interactions
 

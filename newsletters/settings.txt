@@ -11,5 +11,5 @@ lookback_days: 14
 # yes = also list unlisted senders that look like newsletters (never touched).
 candidates: yes
 
-# yes = send a phone push with the one-line result after each run.
-push: no
+# yes = e-mail yourself the run report after each run.
+report_email: no
