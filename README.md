@@ -6,4 +6,4 @@ run reads. The record of runs is the scheduled task's run history on the account
 
 | Spike | What it does | Schedule |
 |-------|--------------|----------|
-| `newsletters/` | Marks newsletter subscriptions as read in Gmail | daily, 06:40 Europe/Vilnius |
+| `newsletters/` | Marks newsletter subscriptions as read in Gmail (Google Apps Script) | daily, ~07:00 Europe/Vilnius |
