@@ -1,0 +1,15 @@
+# Settings read at the start of every run. key: value. Edit and commit to main;
+# the next run picks it up. The schedule itself (06:40 Europe/Vilnius) lives on
+# the routine, not here.
+
+# yes = run; no = the run checks in, does nothing, and says it is paused.
+enabled: yes
+
+# How far back to look for unread newsletter mail, in days.
+lookback_days: 14
+
+# yes = also list unlisted senders that look like newsletters (never touched).
+candidates: yes
+
+# yes = send a phone push with the one-line result after each run.
+push: no

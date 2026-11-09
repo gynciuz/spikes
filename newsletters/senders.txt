@@ -1,0 +1,24 @@
+# Newsletter senders. One per line. A bare domain matches every address at it;
+# a full address matches that address only; a plain word matches the sender's
+# display name (used where the real address is hidden behind a mail relay).
+# Blank lines and lines starting with # are ignored. Edit this file to add or
+# remove a subscription; the next morning's run picks it up.
+#
+# Seeded 2026-11-09 from 45 days of the inbox. Everything here had an
+# unsubscribe link and arrived on a publishing cadence.
+
+# Platforms
+substack.com
+buttondown.email
+
+# Publishers
+semafor.com
+ian@gzeromedia.com
+ed@edwardconard.com
+peter@builtformars.com
+alertbox@nngroup.com
+tamas@heydesigner.com
+hello@goodui.org
+barryseconomics@creator.patreon.com
+newsletter@contentdesign.london
+6nuliai
