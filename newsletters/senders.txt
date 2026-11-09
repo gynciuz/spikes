@@ -22,3 +22,11 @@ hello@goodui.org
 barryseconomics@creator.patreon.com
 newsletter@contentdesign.london
 6nuliai
+
+# Added 2026-11-09 from the first run's candidate list.
+# The Long Memo arrives through a duck.com relay, so it is matched on its display name;
+# the second line is Substack's own notices about it (live video etc.) through the same relay.
+Long Memo
+no-reply_at_substack.com_swimminginthewater@duck.com
+# Semrush position-tracking reports, direct and through the iCloud relay.
+Semrush
