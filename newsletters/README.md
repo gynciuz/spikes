@@ -16,14 +16,27 @@ touching one, delete the line.
 
 ## Schedule
 
-Daily at 06:40 Europe/Vilnius, as a claude.ai scheduled task named
-`newsletters mark read`. The task is stored on the account, not in this repo;
+Daily at 06:40 Europe/Vilnius, as a claude.ai routine named
+`newsletters mark read`. The routine is stored on the account, not in this repo;
 `PROMPT.md` is the copy of its instructions, kept here so changes are versioned.
-If the prompt here changes, the stored task has to be updated to match.
+If the prompt here changes, the stored routine has to be updated to match.
+
+## Setting the routine up
+
+The routine must be created in the claude.ai Routines UI with two things
+selected: the **Gmail** connector and the repository **gynciuz/spikes**. A
+routine created from inside a Claude Code session cannot carry either, and the
+session it fires then has no Gmail tools and no repo (tested 2026-11-09; that
+routine is left disabled on the account with the reason in its name).
+
+Steps: new routine, name `newsletters mark read`, schedule daily 06:40
+Europe/Vilnius, connector Gmail, repository gynciuz/spikes, push notification
+on, prompt pasted from `PROMPT.md` below its rule line. Then run it once by hand
+and check `LOG.md` gained a row.
 
 ## Each run
 
-1. Clones this repo and reads `senders.txt`.
+1. Reads `senders.txt` from this repo (falls back to the copy embedded in the prompt).
 2. Searches Gmail for unread mail from those senders, newer than 14 days.
 3. Removes UNREAD from each matching message.
 4. Lists unread senders from the Updates and Promotions tabs that carry an
