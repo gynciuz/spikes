@@ -16,34 +16,30 @@ touching one, delete the line.
 
 ## Schedule
 
-Daily at 06:40 Europe/Vilnius, as a claude.ai routine named
-`newsletters mark read`. The routine is stored on the account, not in this repo;
-`PROMPT.md` is the copy of its instructions, kept here so changes are versioned.
-If the prompt here changes, the stored routine has to be updated to match.
+Daily at 06:40 Europe/Vilnius, as a claude.ai scheduled task named
+`newsletters mark read (self-bind)`. It wakes the Claude Code session that set
+it up (session_014biwXUQ5bZx4rDKcp8oRis), which holds the Gmail connector and a
+clone of this repo. `PROMPT.md` is the copy of the stored prompt, kept here so
+changes are versioned; if it changes here, the stored task is updated to match.
 
-## Setting the routine up
-
-The routine must be created in the claude.ai Routines UI with two things
-selected: the **Gmail** connector and the repository **gynciuz/spikes**. A
-routine created from inside a Claude Code session cannot carry either, and the
-session it fires then has no Gmail tools and no repo (tested 2026-11-09; that
-routine is left disabled on the account with the reason in its name).
-
-Steps: new routine, name `newsletters mark read`, schedule daily 06:40
-Europe/Vilnius, connector Gmail, repository gynciuz/spikes, push notification
-on, prompt pasted from `PROMPT.md` below its rule line. Then run it once by hand
-and check `LOG.md` gained a row.
+Why self-bind: a scheduled task that starts a fresh session cannot carry the
+Gmail connector or this repo when created from inside a session (tested
+2026-11-09: that session had no Gmail tools and no repo). The fresh-session
+task is kept disabled on the account, renamed RETIRED. The alternative is to
+create the task in the claude.ai Routines UI with Gmail and gynciuz/spikes
+selected; the prompt in `PROMPT.md` works for either.
 
 ## Each run
 
-1. Reads `senders.txt` from this repo (falls back to the copy embedded in the prompt).
+1. Fetches origin and reads `senders.txt` from main (falls back to the copy
+   embedded in the prompt).
 2. Searches Gmail for unread mail from those senders, newer than 14 days.
 3. Removes UNREAD from each matching message.
 4. Lists unread senders from the Updates and Promotions tabs that carry an
    unsubscribe link but are not on the list, as candidates. It does not touch
    them.
-5. Appends one line to `LOG.md` and pushes it to `main`. If the push is
-   refused, the line goes into the run's final message instead.
+5. Reports counts in the session. The record of runs is the scheduled task's
+   run history on the account; nothing is committed.
 
 ## Known interactions
 

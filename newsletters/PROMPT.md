@@ -1,68 +1,53 @@
-# Prompt of the scheduled task `newsletters mark read`
+# Prompt of the scheduled task `newsletters mark read (self-bind)`
 
-Paste this whole block (below the rule) as the prompt of a claude.ai routine.
-When creating the routine, select the **Gmail** connector and the repository
-**gynciuz/spikes**. A routine created without them fires a session that has
-neither (tested 2026-11-09: the fired session had no Gmail tools and no way to
-attach the repo). Keep this file in sync with the stored routine.
+Copy of the stored prompt (trigger trig_01RfJUzBwBiozc98dvGxw9VY, created
+2026-11-09, bound to session_014biwXUQ5bZx4rDKcp8oRis). Keep in sync. If the
+task is ever recreated in the claude.ai Routines UI, select the Gmail connector
+and the repository gynciuz/spikes and paste the block below the rule.
 
-Schedule: daily, 06:40 Europe/Vilnius. Notifications: push on.
+Schedule: daily, 06:40 Europe/Vilnius.
 
 ---
 
-You mark Gintaras's newsletter subscriptions as read in Gmail. You do only what
-is listed here. You never send, reply, forward, trash, archive or relabel mail,
-and you never touch a message whose sender is not on the list.
+Daily newsletters run. Mark Gintaras's newsletter subscriptions as read in
+Gmail. Do only what is listed here. Never send, reply, forward, trash, archive
+or relabel mail, and never touch a message whose sender is not on the list. No
+commits, no pushes.
 
-1. Get the sender list. If the repository gynciuz/spikes is on disk, run
-   `git fetch origin` and read `newsletters/senders.txt` from origin/main; that
-   file wins. If the repository is not on disk, use the list embedded at the end
-   of this prompt and say in the final message that the embedded list was used.
-   A line is a sender when it is non-empty and does not start with `#`.
+1. Sender list. The spikes clone is at /home/user/spikes. Run `git fetch
+   origin` there and read `newsletters/senders.txt` from origin/main (`git show
+   origin/main:newsletters/senders.txt`); if the file is not on origin/main,
+   read it from origin/claude/newsletter-subscriptions-automation-24fseu. If the
+   clone is gone and cannot be re-cloned, use the fallback list at the end of
+   this prompt and say so. A line is a sender when it is non-empty and does not
+   start with `#`.
 
-2. Build the Gmail query. Load the Gmail tools with ToolSearch ("gmail"). If no
-   Gmail tool loads, stop, mark nothing, and say exactly that in the final
-   message. For each sender line make a `from:<line>` term. Query:
-   `is:unread newer_than:14d (<term1> OR <term2> OR ...)`. If the list is longer
-   than about 25 terms, split into several queries.
+2. Query. Load the Gmail tools with ToolSearch if they are not loaded
+   (search_threads, update_message_labels). If no Gmail tool is available,
+   stop, mark nothing, and say exactly that. For each sender line make a
+   `from:<line>` term. Query: `is:unread newer_than:14d (<term1> OR <term2> OR
+   ...)`; split into several queries if over about 25 terms.
 
-3. Collect messages. Run search_threads with view THREAD_VIEW_METADATA_ONLY,
-   pageSize 50, and follow nextPageToken until exhausted. For every message in
-   the results whose labelIds contains UNREAD and whose sender matches a line
-   (domain match, exact address match, or display-name word match), record its
-   message id and sender. Skip anything that does not match, even when it
-   appears in the results.
+3. Collect. search_threads, view THREAD_VIEW_METADATA_ONLY, pageSize 50, follow
+   nextPageToken to the end. For every message whose labelIds contains UNREAD
+   and whose sender matches a line (domain, exact address, or display-name
+   word), record its message id and sender. Skip anything that does not match,
+   even when it appears in the results.
 
-4. Mark read. For each recorded message id call update_message_labels with
-   removeLabelIds ["UNREAD"] and no addLabelIds. Count successes and failures.
+4. Mark read. For each recorded id: update_message_labels with removeLabelIds
+   ["UNREAD"], no addLabelIds. Count successes and failures.
 
-5. Candidates. Run one search: `is:unread newer_than:7d (category:updates OR
+5. Candidates. One search: `is:unread newer_than:7d (category:updates OR
    category:promotions) unsubscribe`, view THREAD_VIEW_SUMMARY, pageSize 50.
-   Collect distinct senders that are not on the list. Do not modify them. List
-   them in the final message as candidates, at most 10, one per line, with the
-   subject of their newest message.
+   Distinct senders not on the list, untouched, at most 10, each with the
+   subject of its newest message.
 
-6. Log. Only if the repository is on disk: append one row to
-   `newsletters/LOG.md`: `| <YYYY-MM-DD Vilnius> | <count marked> | <n failures,
-   n candidates> |`. Commit with message `newsletters: <date> marked <count>
-   read` and push to main. If the push is refused, drop the commit and put the
-   row in the final message instead.
+6. Report, under eight lines: count marked read, by sender name with counts;
+   failures; candidates; which list was used. Plain English, no preamble, no
+   facts that did not come from the mailbox or the repo. Then end the turn.
 
-7. Final message, under eight lines: how many marked read, by sender name with
-   counts; any failures; the candidate list; whether the log was pushed. Plain
-   English, no preamble. Write no facts that did not come from the mailbox or
-   the repo.
-
-Embedded sender list (fallback copy of newsletters/senders.txt, 2026-11-09):
-substack.com
-buttondown.email
-semafor.com
-ian@gzeromedia.com
-ed@edwardconard.com
-peter@builtformars.com
-alertbox@nngroup.com
-tamas@heydesigner.com
-hello@goodui.org
-barryseconomics@creator.patreon.com
-newsletter@contentdesign.london
-6nuliai
+Fallback sender list (copy of newsletters/senders.txt, 2026-11-09):
+substack.com, buttondown.email, semafor.com, ian@gzeromedia.com,
+ed@edwardconard.com, peter@builtformars.com, alertbox@nngroup.com,
+tamas@heydesigner.com, hello@goodui.org, barryseconomics@creator.patreon.com,
+newsletter@contentdesign.london, 6nuliai.
